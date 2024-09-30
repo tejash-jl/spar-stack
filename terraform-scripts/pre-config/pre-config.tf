@@ -160,7 +160,7 @@ resource "google_compute_router_nat" "nat_router" {
   depends_on = [google_compute_router.router]
 }
 
-resource "google_redis_instance" "cache" {
+/*resource "google_redis_instance" "cache" {
   name           = var.redisInfo.instanceName
   tier           = "BASIC"
   memory_size_gb = var.redisInfo.memorySize
@@ -174,7 +174,7 @@ resource "google_redis_instance" "cache" {
 
   depends_on = [google_service_networking_connection.service_nw]
 
-}
+}*/
 
 resource "google_sql_database_instance" "db_instance" {
   name             = var.sqlInfo.instanceName
