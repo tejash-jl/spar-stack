@@ -1,0 +1,35 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: spar-services
+  namespace: spar
+spec:
+  hosts:
+    - "sparqa.dpgongcp.com"  
+  gateways:
+    - internal
+  http:
+    - match:
+        - uri:
+            prefix: /api/mappers  
+      route:
+        - destination:
+            host: spar-spar-mapper-api  
+            port:
+              number: 80
+    - match:
+        - uri:
+            prefix: /api/selfservice  
+      route:
+        - destination:
+            host: spar-spar-self-service-api  
+            port:
+              number: 80
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: spar-spar-self-service-ui  
+            port:
+              number: 80

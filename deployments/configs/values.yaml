@@ -1,10 +1,10 @@
 global:
-  sparHostname: spar.sandbox.openg2p.net
+  sparHostname: sparqa.dpgongcp.com
 
   sparAuthClientId: 'openg2p-spar'
   sparAuthClientSecret: ''
 
-  esignetBaseUrl: https://esignet.sandbox.openg2p.net
+  esignetBaseUrl: https://qafr.dpgongcp.com
 
   keycloakBaseUrl: https://keycloak.openg2p.sandbox.net
   keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/master'
@@ -12,15 +12,7 @@ global:
   sparKeymanagerInstallationName: '{{ .Release.Name }}-keymanager'
 
 postgresql:
-  enabled: true
-  auth:
-    username: sparuser
-    database: spardb
-  primary:
-    extendedConfiguration: |-
-      wal_level = logical
-      max_wal_senders = 20
-      max_replication_slots = 10
+  enabled: false
 
   istio:
     enabled: true
@@ -28,12 +20,12 @@ postgresql:
       enabled: true
       host: "*"
       gateway: ""
-      matchPort: 5432
-      destination: '{{ include "postgresql.v1.primary.fullname" .Subcharts.postgresql }}'
-      destinationPort: "5432"
+      matchPort: 80
+      destination: 'spar-spar-mapper-api'
+      destinationPort: "80"
     gateway:
       enabled: true
-      port: 5432
+      port: 80
       host: "*"
       ingressController:
         istio: ingressgateway
@@ -47,7 +39,9 @@ spar-mapper-api:
   postgresql:
     enabled: false
   envVars:
-    SPAR_MAPPER_DB_HOSTNAME: '{{ .Release.Name }}-postgresql'
+    SPAR_MAPPER_DB_HOSTNAME: 'x.x.x.x'
+    SPAR_MAPPER_DB_USERNAME: 'postgres'
+    SPAR_MAPPER_DB_DBNAME: 'spar-db'
     SPAR_MAPPER_OAUTH_TOKEN_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/protocol/openid-connect/token'
     # TODO: Convert these to be stored in secret
     SPAR_MAPPER_OAUTH_CLIENT_ID: '{{ tpl .Values.global.sparAuthClientId $ }}'
@@ -57,21 +51,25 @@ spar-mapper-api:
   envVarsFrom:
     SPAR_MAPPER_DB_PASSWORD:
       secretKeyRef:
-        name: '{{ .Release.Name }}-postgresql'
+        name: 'external-db-secret'
+        key: SQL_PASS
 
 spar-self-service-api:
   enabled: true
   postgresql:
     enabled: false
   envVars:
-    SPAR_SELFSERVICE_DB_HOSTNAME: '{{ .Release.Name }}-postgresql'
+    SPAR_SELFSERVICE_DB_DBNAME: 'spar-db'
+    SPAR_SELFSERVICE_DB_HOSTNAME: 'x.x.x.x'
+    SPAR_SELFSERVICE_DB_USERNAME: 'postgres'
     SPAR_SELFSERVICE_MAPPER_API_URL: 'http://{{ .Release.Name }}-spar-mapper-api/sync'
     SPAR_SELFSERVICE_AUTH_DEFAULT_ISSUERS: '["{{ .Values.global.esignetBaseUrl }}/v1/esignet"]'
     SPAR_SELFSERVICE_AUTH_DEFAULT_JWKS_URLS: '["{{ .Values.global.esignetBaseUrl }}/v1/esignet/oauth/.well-known/jwks.json"]'
   envVarsFrom:
     SPAR_SELFSERVICE_DB_PASSWORD:
       secretKeyRef:
-        name: '{{ .Release.Name }}-postgresql'
+        name: 'external-db-secret'
+        key: SQL_PASS
   postgresInit:
     hookAnnotations:
       "helm.sh/hook-weight": "0"
@@ -99,3 +97,4 @@ keymanager:
   keygen:
     commonAnnotations:
       "helm.sh/hook-weight": "1"
+

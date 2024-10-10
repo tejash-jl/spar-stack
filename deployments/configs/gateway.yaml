@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: spar-gateway
+  namespace: spar
+spec:
+  selector:
+    istio: ingressgateway # Use Istio's IngressGateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "sparqa.dpgongcp.com"
+      tls:
+        httpsRedirect: true
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: spar-com-tls  # This should match the secret name where the cert is stored
+      hosts:
+        - "sparqa.dpgongcp.com" 
