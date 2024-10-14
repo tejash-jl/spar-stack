@@ -84,7 +84,11 @@ steps:
         # Update the spar-self-service-api DB_HOSTNAME in values.yaml
          echo "Updating SPAR_SELFSERVICE_DB_HOSTNAME in values.yaml..."
         sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" values.yaml
-
+        
+         # Replace the domain placeholder in gateway.yaml
+        echo "Updating gateway.yaml with the domain..."
+        sed -i "s|\${_DOMAIN_}|${_DOMAIN_}|g" path/to/gateway.yaml
+        
         # Install SPAR
         echo "Installing SPAR with Helm..."
         helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --wait --set global.sparHostname="${_DOMAIN_}"
