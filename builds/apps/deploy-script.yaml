@@ -59,6 +59,14 @@ steps:
         sqlPass=$(gcloud secrets versions access latest --secret ${_SECRET_NAME_})
         echo "SQL Password: $sqlPass"
 
+        echo "Checking if the 'spar' namespace exists..."
+        if ! kubectl get namespace spar; then
+          echo "Namespace 'spar' not found. Creating it..."
+          kubectl create namespace spar
+        else
+          echo "Namespace 'spar' already exists."
+        fi
+
         # Create Kubernetes secret
         kubectl create secret generic external-db-secret --from-literal=SQL_PASS="$sqlPass" -n spar
         
@@ -81,6 +89,9 @@ steps:
         echo "Installing SPAR with Helm..."
         helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --wait --set global.sparHostname="${_DOMAIN_}"
         
+        #Install cert Manager
+        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.1 --set crds.enabled=true
+
         # Apply ClusterIssuer
 
         echo "Applying ClusterIssuer..."
