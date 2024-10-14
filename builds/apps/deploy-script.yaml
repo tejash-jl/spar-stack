@@ -79,7 +79,7 @@ steps:
 
         # Install SPAR
         echo "Installing SPAR with Helm..."
-        helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --set externalDatabase.database="$DB_NAME" --wait --set global.sparHostname="${_DOMAIN_}"
+        helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --wait --set global.sparHostname="${_DOMAIN_}"
         
         # Apply ClusterIssuer
 
