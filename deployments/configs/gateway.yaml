@@ -21,6 +21,6 @@ spec:
         protocol: HTTPS
       tls:
         mode: SIMPLE
-        credentialName: "${_SECRET_NAME_}"  # This should match the secret name where the cert is stored
+        credentialName: "qasp-com-tls"  # This should match the secret name where the cert is stored
       hosts:
         - "${_DOMAIN_}"
