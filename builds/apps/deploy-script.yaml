@@ -16,28 +16,34 @@ steps:
         apt-get install -y jq wget
         
         # Install Helm
+        echo "Installing Helm..."
         curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
         # Add necessary Helm repositories
+        echo "Adding necessary Helm repositories..."
         helm repo add openg2p https://your-openg2p-repo-url
         helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
         helm repo add jetstack https://charts.jetstack.io
         helm repo update
         
         # Install Istio
+         echo "Installing Istio..."
         curl -L https://istio.io/downloadIstio | sh -
         cd istio-* || exit
         export PATH=$PWD/bin:$PATH
         istioctl install --set profile=demo -y
         
         # Install Prometheus
+        echo "Installing Prometheus..."
         helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
         
         #Get DB Details
+        echo "Retrieving SQL Instance IP..."
         sqlIP=$(gcloud sql instances describe ${_DB_NAME_} --format=json | jq -r ".ipAddresses[0].ipAddress")
         echo "SQL Instance IP: $sqlIP"
 
         # Get SQL Password from Secret Manager
+         echo "Retrieving SQL Password"
         sqlPass=$(gcloud secrets versions access latest --secret ${_SECRET_NAME_})
         echo "SQL Password: $sqlPass"
 
@@ -45,28 +51,36 @@ steps:
         kubectl create secret generic external-db-secret --from-literal=SQL_PASS="$sqlPass" -n spar
         
         # Update values.yaml file with external database information
+         echo "Updating values.yaml file with external database information..."
         sed -i "s/externalDatabase:\n  host: .*/externalDatabase:\n  host: $sqlIP/g" values.yaml
         sed -i "s/externalDatabase:\n  password: .*/externalDatabase:\n  password: $sqlPass/g" values.yaml
         
         sed -i "s/\(host: \).*/\1$sqlIP/" values.yaml
         sed -i "s/secretKeyRef:/secretKeyRef:\n  name: 'external-db-secret'\n   key: 'SQL_PASS'/" values.yaml
         
+        
         sed -i "s|SPAR_MAPPER_DB_HOSTNAME: ''|SPAR_MAPPER_DB_HOSTNAME: '$sqlIP'|" values.yaml
 
         # Update the spar-self-service-api DB_HOSTNAME in values.yaml
+         echo "Updating SPAR_SELFSERVICE_DB_HOSTNAME in values.yaml..."
         sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" values.yaml
 
         # Install SPAR
+        echo "Installing SPAR with Helm..."
         helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --set externalDatabase.database="$DB_NAME" --wait --set global.sparHostname="${_DOMAIN_}"
         
         # Apply ClusterIssuer
+
+        echo "Applying ClusterIssuer..."
         kubectl apply -f deployments/configs/clusterissuer.yaml
         
         # Apply Certificate
 
+        echo "Applying Certificate..."
         kubectl apply -f deployments/configs/certificates.yaml
         
         # Apply Gateway
+        echo "Applying Gateway..."
         kubectl apply -f deployments/configs/gateway.yaml
  
 substitutions:
