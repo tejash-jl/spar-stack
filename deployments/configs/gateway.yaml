@@ -21,6 +21,6 @@ spec:
         protocol: HTTPS
       tls:
         mode: SIMPLE
-        credentialName: spar-com-tls  # This should match the secret name where the cert is stored
+        credentialName: qaspar-com-tls  # This should match the secret name where the cert is stored
       hosts:
         - "sparqa.dpgongcp.com" 
