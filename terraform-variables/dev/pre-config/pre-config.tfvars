@@ -122,7 +122,7 @@ sqlInfo = {
 
 dbInfo = [
   {
-    name         = "spar-db"
+    name         = "spardb"
     instanceName = "spar-dev-pgsql"
   }
 ]

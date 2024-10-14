@@ -1,100 +1,45 @@
 global:
-  sparHostname: sparqa.dpgongcp.com
-
-  sparAuthClientId: 'openg2p-spar'
-  sparAuthClientSecret: ''
-
+  hostname: 
   esignetBaseUrl: https://qafr.dpgongcp.com
-
-  keycloakBaseUrl: https://keycloak.openg2p.sandbox.net
-  keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/master'
-
-  sparKeymanagerInstallationName: '{{ .Release.Name }}-keymanager'
 
 postgresql:
   enabled: false
 
-  istio:
-    enabled: true
-    virtualservice:
-      enabled: true
-      host: "*"
-      gateway: ""
-      matchPort: 80
-      destination: 'spar-spar-mapper-api'
-      destinationPort: "80"
-    gateway:
-      enabled: true
-      port: 80
-      host: "*"
-      ingressController:
-        istio: ingressgateway
-      tls:
-        enabled: false
-        mode: SIMPLE
-        credentialName: ""
+externalDatabase:
+  host: ""
+  port: 5432
+  user: "postgres"
+  database: "spardb"
+  password:
+    secretKeyRef:
+      name: 'external-db-secret'
+      key: 'SQL_PASS'
 
 spar-mapper-api:
   enabled: true
   postgresql:
     enabled: false
   envVars:
-    SPAR_MAPPER_DB_HOSTNAME: 'x.x.x.x'
-    SPAR_MAPPER_DB_USERNAME: 'postgres'
-    SPAR_MAPPER_DB_DBNAME: 'spar-db'
-    SPAR_MAPPER_OAUTH_TOKEN_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/protocol/openid-connect/token'
-    # TODO: Convert these to be stored in secret
-    SPAR_MAPPER_OAUTH_CLIENT_ID: '{{ tpl .Values.global.sparAuthClientId $ }}'
-    SPAR_MAPPER_OAUTH_CLIENT_SECRET: '{{ tpl .Values.global.sparAuthClientSecret $ }}'
-
-    SPAR_MAPPER_JWT_VERIFY_URL: 'http://{{ tpl .Values.global.sparKeymanagerInstallationName $ }}/v1/keymanager/jwtVerify'
+    SPAR_MAPPER_DB_HOSTNAME: ''
   envVarsFrom:
     SPAR_MAPPER_DB_PASSWORD:
       secretKeyRef:
-        name: 'external-db-secret'
-        key: SQL_PASS
+        name: 'SQL_PASS'
 
 spar-self-service-api:
   enabled: true
   postgresql:
     enabled: false
   envVars:
-    SPAR_SELFSERVICE_DB_DBNAME: 'spar-db'
-    SPAR_SELFSERVICE_DB_HOSTNAME: 'x.x.x.x'
-    SPAR_SELFSERVICE_DB_USERNAME: 'postgres'
+    SPAR_SELFSERVICE_DB_HOSTNAME: ''
     SPAR_SELFSERVICE_MAPPER_API_URL: 'http://{{ .Release.Name }}-spar-mapper-api/sync'
     SPAR_SELFSERVICE_AUTH_DEFAULT_ISSUERS: '["{{ .Values.global.esignetBaseUrl }}/v1/esignet"]'
     SPAR_SELFSERVICE_AUTH_DEFAULT_JWKS_URLS: '["{{ .Values.global.esignetBaseUrl }}/v1/esignet/oauth/.well-known/jwks.json"]'
   envVarsFrom:
     SPAR_SELFSERVICE_DB_PASSWORD:
       secretKeyRef:
-        name: 'external-db-secret'
-        key: SQL_PASS
-  postgresInit:
-    hookAnnotations:
-      "helm.sh/hook-weight": "0"
+        name: 'SQL_PASS'
+
 
 spar-self-service-ui:
   enabled: true
-
-
-keymanager:
-  enabled: true
-  hostname: keymanager-spar.openg2p.sandbox.net
-  springConfig:
-    names: application,kernel
-    profile: default
-    gitRepo:
-      enabled: true
-      repoUrl: https://github.com/openg2p/mosip-config
-      branch: master
-    rawConfig: ""
-  envVars:
-    auth_server_admin_allowed_audience: 'openg2p-sr,openg2p-sr-{{ .Release.Namespace }},openg2p-pbms,openg2p-pbms-{{ .Release.Namespace }},openg2p-spar-{{ .Release.Namespace }}'
-  postgresInit:
-    commonAnnotations:
-      "helm.sh/hook-weight": "0"
-  keygen:
-    commonAnnotations:
-      "helm.sh/hook-weight": "1"
-
