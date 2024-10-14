@@ -1,5 +1,4 @@
 steps:
-
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'get-credentials'
     args: ['container', 'clusters', 'get-credentials', '${_CLUSTER_NAME_}', '--project=${_PROJECT_ID_}', '--region=${_REGION_}', '--internal-ip']
@@ -94,7 +93,7 @@ steps:
         # Apply Gateway
         echo "Applying Gateway..."
         kubectl apply -f deployments/configs/gateway.yaml
-        
+
 tags: ['cloud-builders-community']
 serviceAccount: "projects/${_PROJECT_ID_}/serviceAccounts/${_SERVICE_ACCOUNT_}"
 logsBucket: "gs://${_LOG_BUCKET_}"
