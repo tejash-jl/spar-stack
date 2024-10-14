@@ -24,14 +24,26 @@ steps:
         helm repo add openg2p https://your-openg2p-repo-url
         helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
         helm repo add jetstack https://charts.jetstack.io
+        helm repo add istio https://istio-release.storage.googleapis.com/charts
         helm repo update
         
         # Install Istio
-         echo "Installing Istio..."
-        curl -L https://istio.io/downloadIstio | sh -
-        cd istio-* || exit
-        export PATH=$PWD/bin:$PATH
-        istioctl install --set profile=demo -y
+         echo "Installing Helm..."
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+        # Add the Istio Helm repository
+    
+        # Install Istio Base
+        echo "Installing Istio Base..."
+        helm install istio-base istio/base -n istio-system --create-namespace --wait
+
+        # Install Istiod
+        echo "Installing Istiod..."
+        helm install istiod istio/istiod -n istio-system --wait
+
+        # Install Istio Ingress Gateway
+        echo "Installing Istio Ingress Gateway..."
+        helm install istio-ingress istio/gateway -n istio-system --wait
         
         # Install Prometheus
         echo "Installing Prometheus..."
