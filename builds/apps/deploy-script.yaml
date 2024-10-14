@@ -11,7 +11,7 @@ steps:
       - -c
       - |
         set -a
-        echo ${_LB_NAME_} ${_EMAIL_ID_} ${_CLUSTER_NAME_} ${_REDIS_NAME_} ${_SECRET_NAME_} ${_DB_NAME_} ${_ENABLE_MOCK_} ${_DOMAIN_}
+        echo ${_LB_NAME_} ${_EMAIL_ID_} ${_CLUSTER_NAME_}  ${_SECRET_NAME_} ${_DB_NAME_} ${_ENABLE_MOCK_} ${_DOMAIN_}
         apt-get update
         apt-get install -y jq wget
         
@@ -102,13 +102,11 @@ substitutions:
   _DOMAIN_: ''
   _LOG_BUCKET_: ''
   _EMAIL_ID_: ''
-  _SERVICE_ACCOUNT_: ''
   _SECRET_NAME_: 'spar-dev'
   _DB_NAME_: 'spar-dev-pgsql'
   _LB_NAME_: 'spar-dev-glb-lb-ip'
   _NAME_: 'spar-dev'
   _ENABLE_MOCK_: 'true' # or 'false'
-  _SKIP_INGRESS_: 'true' # or 'false'
   _SPAR_VERSION_: '1.0.0'
 
 options:
