@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: spar-gateway
+  name: internal
   namespace: spar
 spec:
   selector:
@@ -12,7 +12,7 @@ spec:
         name: http
         protocol: HTTP
       hosts:
-        - "sparqa.dpgongcp.com"
+        - "${_DOMAIN_}"
       tls:
         httpsRedirect: true
     - port:
@@ -21,6 +21,6 @@ spec:
         protocol: HTTPS
       tls:
         mode: SIMPLE
-        credentialName: qaspar-com-tls  # This should match the secret name where the cert is stored
+        credentialName: "${_SECRET_NAME_}"  # This should match the secret name where the cert is stored
       hosts:
-        - "sparqa.dpgongcp.com" 
+        - "${_DOMAIN_}"

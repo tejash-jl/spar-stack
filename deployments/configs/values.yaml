@@ -24,7 +24,8 @@ spar-mapper-api:
   envVarsFrom:
     SPAR_MAPPER_DB_PASSWORD:
       secretKeyRef:
-        name: 'SQL_PASS'
+        name: 'external-db-secret'
+        key: 'SQL_PASS'
 
 spar-self-service-api:
   enabled: true
@@ -38,7 +39,8 @@ spar-self-service-api:
   envVarsFrom:
     SPAR_SELFSERVICE_DB_PASSWORD:
       secretKeyRef:
-        name: 'SQL_PASS'
+        name: 'external-db-secret'
+        key: 'SQL_PASS'
 
 
 spar-self-service-ui:

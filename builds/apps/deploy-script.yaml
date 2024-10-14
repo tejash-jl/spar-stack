@@ -1,1 +1,92 @@
+steps:
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'get-credentials'
+    args: ['container', 'clusters', 'get-credentials', '${_CLUSTER_NAME_}', '--project=${_PROJECT_ID_}', '--region=${_REGION_}', '--internal-ip']
+  
+  # Step 2: Installing Helm and dependencies
+  - id: 'install-helm'
+    entrypoint: 'bash'
+    args:
+      - -c
+      - |
+        set -a
+        echo ${_LB_NAME_} ${_EMAIL_ID_} ${_CLUSTER_NAME_} ${_REDIS_NAME_} ${_SECRET_NAME_} ${_DB_NAME_} ${_ENABLE_MOCK_} ${_DOMAIN_}
+        apt-get update
+        apt-get install -y jq wget
+        
+        # Install Helm
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+        # Add necessary Helm repositories
+        helm repo add openg2p https://your-openg2p-repo-url
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+        helm repo add jetstack https://charts.jetstack.io
+        helm repo update
+        
+        # Install Istio
+        curl -L https://istio.io/downloadIstio | sh -
+        cd istio-* || exit
+        export PATH=$PWD/bin:$PATH
+        istioctl install --set profile=demo -y
+        
+        # Install Prometheus
+        helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+        
+        #Get DB Details
+        sqlIP=$(gcloud sql instances describe ${_DB_NAME_} --format=json | jq -r ".ipAddresses[0].ipAddress")
+        echo "SQL Instance IP: $sqlIP"
+
+        # Get SQL Password from Secret Manager
+        sqlPass=$(gcloud secrets versions access latest --secret ${_SECRET_NAME_})
+        echo "SQL Password: $sqlPass"
+
+        # Create Kubernetes secret
+        kubectl create secret generic external-db-secret --from-literal=SQL_PASS="$sqlPass" -n spar
+        
+        # Update values.yaml file with external database information
+        sed -i "s/externalDatabase:\n  host: .*/externalDatabase:\n  host: $sqlIP/g" values.yaml
+        sed -i "s/externalDatabase:\n  password: .*/externalDatabase:\n  password: $sqlPass/g" values.yaml
+        
+        sed -i "s/\(host: \).*/\1$sqlIP/" values.yaml
+        sed -i "s/secretKeyRef:/secretKeyRef:\n  name: 'external-db-secret'\n   key: 'SQL_PASS'/" values.yaml
+        
+        sed -i "s|SPAR_MAPPER_DB_HOSTNAME: ''|SPAR_MAPPER_DB_HOSTNAME: '$sqlIP'|" values.yaml
+
+        # Update the spar-self-service-api DB_HOSTNAME in values.yaml
+        sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" values.yaml
+
+        # Install SPAR
+        helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --set externalDatabase.database="$DB_NAME" --wait --set global.sparHostname="${_DOMAIN_}"
+        
+        # Apply ClusterIssuer
+        kubectl apply -f deployments/configs/clusterissuer.yaml
+        
+        # Apply Certificate
+
+        kubectl apply -f deployments/configs/certificates.yaml
+        
+        # Apply Gateway
+        kubectl apply -f deployments/configs/gateway.yaml
+ 
+substitutions:
+  _PROJECT_ID_: ''
+  _REGION_: ''
+  _CLUSTER_NAME_: 'spar-dev-cluster'
+  _DOMAIN_: ''
+  _LOG_BUCKET_: ''
+  _EMAIL_ID_: ''
+  _SERVICE_ACCOUNT_: ''
+  _SECRET_NAME_: 'spar-dev'
+  _DB_NAME_: 'spar-dev-pgsql'
+  _LB_NAME_: 'spar-dev-glb-lb-ip'
+  _NAME_: 'spar-dev'
+  _ENABLE_MOCK_: 'true' # or 'false'
+  _SKIP_INGRESS_: 'true' # or 'false'
+  _SPAR_VERSION_: '1.0.0'
+
+options:
+    dynamicSubstitutions: true
+    pool:
+      name: 'projects/${_PROJECT_ID_}/locations/${_REGION_}/workerPools/${_NAME_}-cloudbuild-private-worker-pool'
 
