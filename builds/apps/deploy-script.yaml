@@ -4,7 +4,8 @@ steps:
     args: ['container', 'clusters', 'get-credentials', '${_CLUSTER_NAME_}', '--project=${_PROJECT_ID_}', '--region=${_REGION_}', '--internal-ip']
   
   # Step 2: Installing Helm and dependencies
-  - id: 'install-helm'
+  - name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
+    id: 'install-helm'
     entrypoint: 'bash'
     args:
       - -c
