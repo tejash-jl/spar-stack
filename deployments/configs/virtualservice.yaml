@@ -5,7 +5,7 @@ metadata:
   namespace: spar
 spec:
   hosts:
-    - "sparqa.dpgongcp.com"  
+    - {{_DOMAIN_}}  
   gateways:
     - internal
   http:
