@@ -5,22 +5,14 @@ global:
 postgresql:
   enabled: false
 
-externalDatabase:
-  host: ""
-  port: 5432
-  user: "postgres"
-  database: "spardb"
-  password:
-    secretKeyRef:
-      name: 'external-db-secret'
-      key: 'SQL_PASS'
-
 spar-mapper-api:
   enabled: true
   postgresql:
     enabled: false
   envVars:
     SPAR_MAPPER_DB_HOSTNAME: ''
+    SPAR_MAPPER_DB_USERNAME: "postgres"
+    SPAR_MAPPER_DB_DBNAME: "spardb"
   envVarsFrom:
     SPAR_MAPPER_DB_PASSWORD:
       secretKeyRef:
@@ -33,6 +25,8 @@ spar-self-service-api:
     enabled: false
   envVars:
     SPAR_SELFSERVICE_DB_HOSTNAME: ''
+    SPAR_SELFSERVICE_DB_USERNAME: "postgres"
+    SPAR_SELFSERVICE_DB_DBNAME: "spardb"
     SPAR_SELFSERVICE_MAPPER_API_URL: 'http://{{ .Release.Name }}-spar-mapper-api/sync'
     SPAR_SELFSERVICE_AUTH_DEFAULT_ISSUERS: '["{{ .Values.global.esignetBaseUrl }}/v1/esignet"]'
     SPAR_SELFSERVICE_AUTH_DEFAULT_JWKS_URLS: '["{{ .Values.global.esignetBaseUrl }}/v1/esignet/oauth/.well-known/jwks.json"]'

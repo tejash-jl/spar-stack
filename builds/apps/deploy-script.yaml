@@ -98,6 +98,7 @@ steps:
         # Apply ClusterIssuer
 
         echo "Applying ClusterIssuer..."
+        sed "s/EMAIL/${_EMAIL_ID_}/g" deployments/configs/clusterissuer.yaml
         kubectl apply -f deployments/configs/clusterissuer.yaml
         
         # Apply Certificate

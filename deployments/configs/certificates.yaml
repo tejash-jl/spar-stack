@@ -4,10 +4,10 @@ metadata:
   name: spardev-com-tls
   namespace: istio-system  # Your namespace where Istio is installed
 spec:
-  secretName: spardev-com-tls
+  secretName: testing-com-tls
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
-  commonName: "{{_DOMAIN_}}"
+  commonName: {{_DOMAIN_}}
   dnsNames:
-    - "{{_DOMAIN_}}"
+    - {{_DOMAIN_}}
