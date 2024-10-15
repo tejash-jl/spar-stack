@@ -88,7 +88,7 @@ steps:
 
         # Install SPAR
         echo "Installing SPAR with Helm..."
-        helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --wait --set global.sparHostname="${_DOMAIN_}"
+        helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --wait --set global.sparHostname="${_DOMAIN_}" -f values.yaml
         
         #Install cert Manager
         helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.1 --set crds.enabled=true
