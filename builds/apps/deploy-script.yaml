@@ -85,7 +85,8 @@ steps:
         
          # Replace the domain placeholder in gateway.yaml
         echo "Updating gateway.yaml with the domain..."
-        sed -i "s|\${_DOMAIN_}|${_DOMAIN_}|g" -f deployments/configs/gateway.yaml
+        # sed -i "s|\${_DOMAIN_}|${_DOMAIN_}|g" -f deployments/configs/gateway.yaml
+        sed "s/{{_DOMAIN_}}/${_DOMAIN_}/g" -f deployments/configs/certificates.yaml
 
         # Install SPAR
         echo "Installing SPAR with Helm..."
@@ -102,6 +103,7 @@ steps:
         # Apply Certificate
 
         echo "Applying Certificate..."
+        sed "s/{{_DOMAIN_}}/${_DOMAIN_}/g" -f deployments/configs/certificates.yaml
         kubectl apply -f deployments/configs/certificates.yaml
         
         # Apply Gateway
