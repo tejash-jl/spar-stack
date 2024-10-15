@@ -12,7 +12,7 @@ spec:
         name: http
         protocol: HTTP
       hosts:
-        - {{_DOMAIN_}}
+        - "{{_DOMAIN_}}"
       tls:
         httpsRedirect: true
     - port:
@@ -23,4 +23,4 @@ spec:
         mode: SIMPLE
         credentialName: testing-com-tls  # This should match the secret name where the cert is stored
       hosts:
-        - {{_DOMAIN_}}
+        - "{{_DOMAIN_}}"
