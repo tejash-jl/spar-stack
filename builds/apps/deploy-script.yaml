@@ -74,12 +74,14 @@ steps:
 
         # Update the mapper-api DB_HOSTNAME in values.yaml
         # sed -i "s|SPAR_MAPPER_DB_HOSTNAME: ''|SPAR_MAPPER_DB_HOSTNAME: '$sqlIP'|" -f deployments/configs/values.yaml
-        sed -i "s|\(SPAR_MAPPER_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml
+        sed -i "s|SPAR_MAPPER_DB_HOSTNAME: ''|SPAR_MAPPER_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml
+        cat deployments/configs/values.yaml | grep SPAR_MAPPER_DB_HOSTNAME
+
 
         # Update the spar-self-service-api DB_HOSTNAME in values.yaml
         echo "Updating SPAR_SELFSERVICE_DB_HOSTNAME in values.yaml..."
-        # sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" -f deployments/configs/values.yaml
-        sed -i "s|\(SPAR_SELFSERVICE_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml        
+        sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml
+        #sed -i "s|\(SPAR_SELFSERVICE_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml        
 
 
         # Replace the domain placeholder in gateway.yaml
