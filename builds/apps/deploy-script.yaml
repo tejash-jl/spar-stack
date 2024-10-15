@@ -103,7 +103,7 @@ steps:
 
         echo "Applying Certificate..."
         if sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/certificates.yaml
-           echo "Successfully updated certificates.yaml
+           echo "Successfully updated certificates.yaml"
         else
             echo "Failed to update certificate.yaml"
             exit 1
