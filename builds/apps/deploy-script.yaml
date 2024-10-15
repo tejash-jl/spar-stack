@@ -107,7 +107,7 @@ steps:
         
         # Apply Gateway
         echo "Applying Gateway..."
-        if sed -i -E "s|{{_DOMAIN_}}|${_DOMAIN_}|g" deployments/configs/gateway.yaml; then
+        if sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/gateway.yaml; then
             echo "Successfully updated gateway.yaml"
         else
             echo "Failed to update gateway.yaml"
