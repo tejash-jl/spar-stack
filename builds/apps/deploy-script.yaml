@@ -41,7 +41,7 @@ steps:
 
         # Install Istio Ingress Gateway
         echo "Installing Istio Ingress Gateway..."
-        helm install istio-ingress istio/gateway -n istio-system --wait
+        helm install istio-ingressgateway istio/gateway -n istio-system --wait
         
         # Install Prometheus
         echo "Installing Prometheus..."
@@ -67,22 +67,21 @@ steps:
 
         # Create Kubernetes secret
         kubectl create secret generic external-db-secret --from-literal=SQL_PASS="$sqlPass" -n spar
-        
-        # Update values.yaml file with external database information
-         echo "Updating values.yaml file with external database information..."
-        sed -i "s/externalDatabase:\n  host: .*/externalDatabase:\n  host: $sqlIP/g" -f deployments/configs/values.yaml
-        sed -i "s/externalDatabase:\n  password: .*/externalDatabase:\n  password: $sqlPass/g" -f deployments/configs/values.yaml
-        
-        sed -i "s/\(host: \).*/\1$sqlIP/" -f deployments/configs/values.yaml
-        sed -i "s/secretKeyRef:/secretKeyRef:\n  name: 'external-db-secret'\n   key: 'SQL_PASS'/" -f deployments/configs/values.yaml
-        
-         # Update the mapper-api DB_HOSTNAME in values.yaml
-        sed -i "s|SPAR_MAPPER_DB_HOSTNAME: ''|SPAR_MAPPER_DB_HOSTNAME: '$sqlIP'|" -f deployments/configs/values.yaml
+
+        sed -i "s|\(SPAR_MAPPER_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml
+        sed -i "s|\(SPAR_SELFSERVICE_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml        
+
+
+        # Update the mapper-api DB_HOSTNAME in values.yaml
+        # sed -i "s|SPAR_MAPPER_DB_HOSTNAME: ''|SPAR_MAPPER_DB_HOSTNAME: '$sqlIP'|" -f deployments/configs/values.yaml
+        sed -i "s|\(SPAR_MAPPER_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml
 
         # Update the spar-self-service-api DB_HOSTNAME in values.yaml
-         echo "Updating SPAR_SELFSERVICE_DB_HOSTNAME in values.yaml..."
-        sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" -f deployments/configs/values.yaml
-        
+        echo "Updating SPAR_SELFSERVICE_DB_HOSTNAME in values.yaml..."
+        # sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" -f deployments/configs/values.yaml
+        sed -i "s|\(SPAR_SELFSERVICE_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml        
+
+
          # Replace the domain placeholder in gateway.yaml
         echo "Updating gateway.yaml with the domain..."
         # sed -i "s|\${_DOMAIN_}|${_DOMAIN_}|g" -f deployments/configs/gateway.yaml
@@ -98,13 +97,13 @@ steps:
         # Apply ClusterIssuer
 
         echo "Applying ClusterIssuer..."
-        sed "s/EMAIL/${_EMAIL_ID_}/g" deployments/configs/clusterissuer.yaml
+        sed -i "s/EMAIL/${_EMAIL_ID_}/g" deployments/configs/clusterissuer.yaml
         kubectl apply -f deployments/configs/clusterissuer.yaml
         
         # Apply Certificate
 
         echo "Applying Certificate..."
-        sed "s/{{_DOMAIN_}}/${_DOMAIN_}/g" -f deployments/configs/certificates.yaml
+        sed -i "s/{{_DOMAIN_}}/${_DOMAIN_}/g" -f deployments/configs/certificates.yaml
         kubectl apply -f deployments/configs/certificates.yaml
         
         # Apply Gateway
