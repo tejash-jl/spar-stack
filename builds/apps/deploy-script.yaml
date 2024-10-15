@@ -76,7 +76,7 @@ steps:
         sed -i "s/\(host: \).*/\1$sqlIP/" -f deployments/configs/values.yaml
         sed -i "s/secretKeyRef:/secretKeyRef:\n  name: 'external-db-secret'\n   key: 'SQL_PASS'/" -f deployments/configs/values.yaml
         
-        
+         # Update the mapper-api DB_HOSTNAME in values.yaml
         sed -i "s|SPAR_MAPPER_DB_HOSTNAME: ''|SPAR_MAPPER_DB_HOSTNAME: '$sqlIP'|" -f deployments/configs/values.yaml
 
         # Update the spar-self-service-api DB_HOSTNAME in values.yaml
