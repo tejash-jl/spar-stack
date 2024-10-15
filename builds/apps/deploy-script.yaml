@@ -104,7 +104,7 @@ steps:
         # Apply Certificate
 
         echo "Applying Certificate..."
-        sed -i "s/{{_DOMAIN_}}/${_DOMAIN_}/g" -f deployments/configs/certificates.yaml
+        sed -i "s/{{_DOMAIN_}}/${_DOMAIN_}/g" deployments/configs/certificates.yaml
         kubectl apply -f deployments/configs/certificates.yaml
         
         # Apply Gateway
