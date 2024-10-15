@@ -10,7 +10,7 @@ spar-mapper-api:
   postgresql:
     enabled: false
   envVars:
-    SPAR_MAPPER_DB_HOSTNAME: ''
+    SPAR_MAPPER_DB_HOSTNAME: ""
     SPAR_MAPPER_DB_USERNAME: "postgres"
     SPAR_MAPPER_DB_DBNAME: "spardb"
   envVarsFrom:
@@ -24,7 +24,7 @@ spar-self-service-api:
   postgresql:
     enabled: false
   envVars:
-    SPAR_SELFSERVICE_DB_HOSTNAME: ''
+    SPAR_SELFSERVICE_DB_HOSTNAME: ""
     SPAR_SELFSERVICE_DB_USERNAME: "postgres"
     SPAR_SELFSERVICE_DB_DBNAME: "spardb"
     SPAR_SELFSERVICE_MAPPER_API_URL: 'http://{{ .Release.Name }}-spar-mapper-api/sync'

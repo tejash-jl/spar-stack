@@ -15,10 +15,10 @@ postgresql:
   enabled: false
 
 externalDatabase:
-  host: "x.x.x.x"
+  host: ""
   port: 5432
   user: "postgres"
-  database: "spar-db"
+  database: "spardb"
   password:
     secretKeyRef:
       name: 'external-db-secret'
@@ -50,9 +50,9 @@ spar-mapper-api:
   postgresql:
     enabled: false
   envVars:
-    SPAR_MAPPER_DB_HOSTNAME: 'x.x.x.x'
+    SPAR_MAPPER_DB_HOSTNAME: ''
     SPAR_MAPPER_DB_USERNAME: 'postgres'
-    SPAR_MAPPER_DB_DBNAME: 'spar-db'
+    SPAR_MAPPER_DB_DBNAME: 'spardb'
     SPAR_MAPPER_OAUTH_TOKEN_URL: '{{ tpl .Values.global.keycloakIssuerUrl $ }}/protocol/openid-connect/token'
     # TODO: Convert these to be stored in secret
     SPAR_MAPPER_OAUTH_CLIENT_ID: '{{ tpl .Values.global.sparAuthClientId $ }}'
@@ -70,8 +70,8 @@ spar-self-service-api:
   postgresql:
     enabled: false
   envVars:
-    SPAR_SELFSERVICE_DB_DBNAME: 'spar-db'
-    SPAR_SELFSERVICE_DB_HOSTNAME: 'x.x.x.x'
+    SPAR_SELFSERVICE_DB_DBNAME: 'spardb'
+    SPAR_SELFSERVICE_DB_HOSTNAME: ''
     SPAR_SELFSERVICE_DB_USERNAME: 'postgres'
     SPAR_SELFSERVICE_MAPPER_API_URL: 'http://{{ .Release.Name }}-spar-mapper-api/sync'
     SPAR_SELFSERVICE_AUTH_DEFAULT_ISSUERS: '["{{ .Values.global.esignetBaseUrl }}/v1/esignet"]'

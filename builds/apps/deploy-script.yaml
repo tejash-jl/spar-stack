@@ -82,7 +82,7 @@ steps:
         echo "Updating SPAR_SELFSERVICE_DB_HOSTNAME in values.yaml..."
         sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml
         #sed -i "s|\(SPAR_SELFSERVICE_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml        
-
+        cat deployments/configs/values.yaml | grep SPAR_SELFSERVICE_DB_HOSTNAME
 
         # Replace the domain placeholder in gateway.yaml
         echo "Updating gateway.yaml with the domain..."
