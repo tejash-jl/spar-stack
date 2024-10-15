@@ -4,7 +4,7 @@ metadata:
   name: spdev-com-tls
   namespace: istio-system  # Your namespace where Istio is installed
 spec:
-  secretName: testing-com-tls
+  secretName: spartesting-com-tls
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
