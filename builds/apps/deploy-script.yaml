@@ -105,12 +105,6 @@ steps:
         echo "Applying Certificate..."
         sed "s/{{_DOMAIN_}}/${_DOMAIN_}/g" -f deployments/configs/certificates.yaml
         kubectl apply -f deployments/configs/certificates.yaml
-
-        #TLS_SECRET=$(kubectl get certificate spardev-com-tls -o jsonpath='{.spec.secretName}')
-        #echo "Extracted TLS Secret: $TLS_SECRET"
-
-        # Replace the TLS_SECRET placeholder in gateway.yaml
-        #sed "s/{{TLS_SECRET}}/$TLS_SECRET/g" deployments/configs/gateway.yaml
         
         # Apply Gateway
         echo "Applying Gateway..."
