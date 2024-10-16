@@ -153,6 +153,8 @@ substitutions:
   _NAME_: 'spar-dev'
   _ENABLE_MOCK_: 'true' # or 'false'
   _SPAR_VERSION_: '1.0.0'
+  _LOAD_BALANCER_IP: "$LOAD_BALANCER_IP" 
+  
 
 options:
     dynamicSubstitutions: true
