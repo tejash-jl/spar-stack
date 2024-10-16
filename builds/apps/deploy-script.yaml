@@ -128,12 +128,14 @@ steps:
             exit 1
         fi
         kubectl apply -f deployments/configs/virtualservice.yaml
+        
 
-        LOAD_BALANCER_IP=$(gcloud compute addresses describe "$_LB_NAME_" --region "$_REGION_" --format json | jq -r ".address")
+        LOAD_BALANCER_IP=$(gcloud compute addresses describe "${_LB_NAME}" --region "${_REGION}" --format json | jq -r ".address")
         echo "Load Balancer IP: $LOAD_BALANCER_IP"
+
+        # Patch the Istio ingress gateway with the Load Balancer IP
         kubectl patch svc istio-ingressgateway --namespace istio-system --patch "{\"spec\": { \"loadBalancerIP\": \"$LOAD_BALANCER_IP\" }}"
         echo "Istio ingress gateway patched with Load Balancer IP: $LOAD_BALANCER_IP"
-
 
 tags: ['cloud-builders-community']
 serviceAccount: "projects/${_PROJECT_ID_}/serviceAccounts/${_SERVICE_ACCOUNT_}"
@@ -153,7 +155,7 @@ substitutions:
   _NAME_: 'spar-dev'
   _ENABLE_MOCK_: 'true' # or 'false'
   _SPAR_VERSION_: '1.0.0'
-  _LOAD_BALANCER_IP: ''
+
   
   
 
