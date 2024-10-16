@@ -39,3 +39,42 @@ spar-self-service-api:
 
 spar-self-service-ui:
   enabled: true
+
+istio:
+  enabled: true
+  virtualservice:
+    enabled: true
+    host: {{_DOMAIN_}}
+    gateway: "internal"
+    routes:
+      - match:
+          - uri:
+              prefix: /api/selfservice/
+        rewrite:
+          uri: /
+        route:
+          - destination:
+              host: spar-spar-self-service-api
+              port:
+                number: 80
+      - match:
+          - uri:
+              prefix: /api/mappers
+        rewrite:
+            uri: / 
+        route:
+          - destination:
+              host: spar-spar-mapper-api  
+              port:
+                number: 80
+      - match:
+          - uri:
+              prefix: /
+          rewrite:
+              uri: / 
+        route:
+          - destination:
+              host: spar-spar-self-service-ui  
+              port:
+                number: 80
+      
