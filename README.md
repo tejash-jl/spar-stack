@@ -93,17 +93,21 @@ CLUSTER=
 DOMAIN_NAME=
 EMAIL_ID=
 alias k=kubectl
+```
 
 #### **Script to setup authentication, configuring the project, enabling services, and creating a service account in GCP**:
 ```
 script file located at `deployment/scripts/setup_gcp.sh` 
 
 **To execute the script**
+
 bash setup_gcp.sh
 ```
+
 #### Deploy Infrastructure using Terraform
 
 #### Terraform State management
+
 ####The PROJECT_ID needs to be updated in the command below.
 
 ```bash
