@@ -70,7 +70,7 @@ istio:
       - match:
           - uri:
               prefix: /
-          rewrite:
+        rewrite:
               uri: / 
         route:
           - destination:

@@ -11,7 +11,9 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /api/mappers  
+            prefix: /api/mappers
+      rewrite:
+          uri: / 
       route:
         - destination:
             host: spar-spar-mapper-api  
@@ -20,6 +22,8 @@ spec:
     - match:
         - uri:
             prefix: /api/selfservice  
+      rewrite:
+          uri: / 
       route:
         - destination:
             host: spar-spar-self-service-api  
