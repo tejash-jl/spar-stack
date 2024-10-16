@@ -47,6 +47,9 @@ steps:
         echo "Installing Prometheus..."
         helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
         
+        #Install psql client
+        sudo apt-get install postgresql-client
+
         #Get DB Details
         echo "Retrieving SQL Instance IP..."
         sqlIP=$(gcloud sql instances describe ${_DB_NAME_} --format=json | jq -r ".ipAddresses[0].ipAddress")
