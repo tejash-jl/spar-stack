@@ -142,7 +142,7 @@ _SERVICE_ACCOUNT_=$GSA,_LOG_BUCKET_=$PROJECT_ID-tfs-stg
 ```
 
 ##### Output
-```
+
 ...
 Apply complete! Resources: 36 added, 0 changed, 0 destroyed.
 
