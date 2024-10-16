@@ -11,7 +11,7 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /api/mappers
+            prefix: /api/mapper/
       rewrite:
           uri: / 
       route:
@@ -21,7 +21,7 @@ spec:
               number: 80
     - match:
         - uri:
-            prefix: /api/selfservice  
+            prefix: /api/selfservice/  
       rewrite:
           uri: / 
       route:
@@ -31,9 +31,15 @@ spec:
               number: 80
     - match:
         - uri:
-            prefix: /
+            prefix: /selfservice
       route:
         - destination:
             host: spar-spar-self-service-ui  
             port:
               number: 80
+    - match:
+        - uri:
+            prefix: /
+      redirect:
+        uri: /selfservice
+    

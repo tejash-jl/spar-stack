@@ -46,3 +46,6 @@ istio:
     enabled: true
     host: "{{_DOMAIN_}}"
     gateway: internal
+    matchPort: 80
+    destination: 'spar-spar-mapper-api'
+    destinationPort: "80"

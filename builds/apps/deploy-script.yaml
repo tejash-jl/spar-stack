@@ -84,8 +84,6 @@ steps:
         sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml             
         cat deployments/configs/values.yaml | grep SPAR_SELFSERVICE_DB_HOSTNAME
 
-        # Replace the domain placeholder in gateway.yaml
-        #sed -i "s/{{_DOMAIN_}}/${_DOMAIN_}/g" deployments/configs/gateway.yaml
 
         # Install SPAR
         echo "Installing SPAR with Helm..."

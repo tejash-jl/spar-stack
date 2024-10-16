@@ -1,8 +1,21 @@
 # SPAR, one-click deployment on GCP
 
-![dcs-lz](./assets/arch.png)
+
 
 ## Introduction
+
+### Overview
+
+- **Kubernetes (GKE)** - Google Kubernetes Engine (GKE) is used as the core platform for container orchestration.
+
+-	**spar-spar-mapper-api** - Manages the routing and mapping of service requests to appropriate internal services.
+
+- **spar-spar-self-service-api** - Enables self-service functionalities by handling user requests and interactions with internal services.
+
+- **spar-spar-self-service-ui** – Provides the user interface for the self-service API, allowing users to interact with the system
+
+- **Istio Ingress**: The traffic to the Spar services is managed by Istio, which acts as the ingress controller.
+
 
 ## Deployment Approach
 
@@ -27,30 +40,18 @@ The entire Terraform deployment is divided into 2 stages -
 
   - #### [Run gcloud commands with Cloud Shell](https://cloud.google.com/shell/docs/run-gcloud-commands)
   
-- [**Install kubectl**](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl#apt)
+- **Install kubectl**
 
-  ```bash
-  sudo apt-get update
-  sudo apt-get install kubectl
-  kubectl version --client
-  
-  sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
-  ```
-  
-- [**Install Helm**](https://helm.sh/docs/intro/install/)
+   https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl#apt
 
-  ```bash
-  curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
   
-  sudo apt-get install apt-transport-https --yes
-  
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-  
-  sudo apt-get update
-  sudo apt-get install helm
-  
-  helm version --client
-  ```
+- **Install Helm**
+
+  https://helm.sh/docs/intro/install/
+
+- **Esignet Cluster Setup**
+    Esignet must be setup and running 
+
 
 ### Workspace - Folder structure
 
@@ -75,9 +76,7 @@ The entire Terraform deployment is divided into 2 stages -
         - **pre-config.tfvars**
           - Actual values for the variable template defined in **variables.tf** to be passed to **pre-config.tf** 
       
-### Infrastructure Deployment
 
-![deploy-approach](./assets/deploy-approach.png)
 
 ## Step-by-Step guide
 
@@ -94,56 +93,14 @@ CLUSTER=
 DOMAIN_NAME=
 EMAIL_ID=
 alias k=kubectl
+
+#### **Script to setup authentication, configuring the project, enabling services, and creating a service account in GCP**:
 ```
+script file located at `deployment/scripts/setup_gcp.sh` 
 
-#### Authenticate user to gcloud
-
-```bash
-gcloud auth login
-gcloud auth list
-gcloud config set account $OWNER
+**To execute the script**
+bash setup_gcp.sh
 ```
-
-#### Setup current project
-
-```bash
-gcloud config set project $PROJECT_ID
-
-gcloud services enable cloudresourcemanager.googleapis.com
-gcloud services enable compute.googleapis.com
-gcloud services enable container.googleapis.com
-gcloud services enable storage.googleapis.com
-gcloud services enable run.googleapis.com
-gcloud services enable servicenetworking.googleapis.com
-gcloud services enable cloudkms.googleapis.com
-gcloud services enable certificatemanager.googleapis.com
-gcloud services enable cloudbuild.googleapis.com
-gcloud services enable sqladmin.googleapis.com
-gcloud services enable secretmanager.googleapis.com
-gcloud services enable servicenetworking.googleapis.com
-
-gcloud config set compute/region $REGION
-gcloud config set compute/zone $ZONE
-```
-
-#### Setup Service Account
-
-Current authenticated user will hand over control to a **Service Account** which would be used for all subsequent resource deployment and management
-
-```bash
-gcloud iam service-accounts create $GSA_DISPLAY_NAME --display-name=$GSA_DISPLAY_NAME
-gcloud iam service-accounts list
-
-# Make SA as the owner
-gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:$GSA --role=roles/owner
-
-# ServiceAccountUser role for the SA
-gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:$GSA --role=roles/iam.serviceAccountUser
-
-# ServiceAccountTokenCreator role for the SA
-gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:$GSA --role=roles/iam.serviceAccountTokenCreator
-```
-
 #### Deploy Infrastructure using Terraform
 
 #### Terraform State management
@@ -185,18 +142,12 @@ _SERVICE_ACCOUNT_=$GSA,_LOG_BUCKET_=$PROJECT_ID-tfs-stg
 ...
 Apply complete! Resources: 36 added, 0 changed, 0 destroyed.
 
-Outputs:
-
-lb_public_ip = "**.93.6.**"
-sql_private_ip = "**.125.196.**"
-```
 
 _**Before moving to the next step, you need to create domain/subdomain and create a DNS `A` type record pointing to `lb_public_ip`**_
 
 
-#### Deploy service
+#### Deploy services
 
-##### Deploy Landing Zone
 
 ```bash
 cd $BASEFOLDERPATH
@@ -218,25 +169,17 @@ _REGION_="$REGION",_LOG_BUCKET_=$PROJECT_ID-tfs-stg,_SERVICE_ACCOUNT_=$GSA
 */
 ```
 
-_**After successfully deploying the services you can check if you're able to access keycloak using your domain. Ex: https://$DOMAIN/auth/**_
-
-_Please note that issuing of ssl certificate and DNS mapping might take some time_
-
-_Only if you're able to access the keycloak UI, proceed to next steps_
-
-
 
 #### Connect to the Cluster through bastion host
 
 ```bash
 gcloud compute instances list
-gcloud compute ssh spar-ops-vm --zone=$ZONE
-gcloud container clusters get-credentials spar-cluster --project=$PROJECT_ID --region=$REGION
+gcloud compute ssh spar-dev-ops-vm --zone=$ZONE
+gcloud container clusters get-credentials spar-dev-cluster --project=$PROJECT_ID --region=$REGION
 
 kubectl get nodes
 kubectl get pods -n spar
-kubectl get svc -n ingress-nginx
-kubectl get pods -n vault
+kubectl get svc -n istio-system
 ```
 
 
@@ -249,15 +192,15 @@ sudo apt-get install postgresql-client
 ```
 - Run below command to access psql password
 ```bash
-gcloud secrets versions access latest --secret spar
+gcloud secrets versions access latest --secret spar-dev
 ```
 - Run below command to get private ip of sql
 ```bash
- gcloud sql instances describe spar-pgsql --format=json  | jq -r ".ipAddresses"
+ gcloud sql instances describe spar-dev-pgsql --format=json  | jq -r ".ipAddresses[0].ipAddress"
 ```
 - Connect to psql
 ```bash
-psql "sslmode=require hostaddr=PRIVATE_IP user=spar dbname=spar"
+psql "sslmode=require hostaddr=PRIVATE_IP user=postgres dbname=postgres"
 ```
 
 ### DEMO
@@ -268,4 +211,4 @@ psql "sslmode=require hostaddr=PRIVATE_IP user=spar dbname=spar"
 
 - [GKE Cluster](https://cloud.google.com/kubernetes-engine/docs)
 - [Cloud SQL for PostgreSQL](https://cloud.google.com/sql/docs/postgres)
-- [Secret Manager](https://cloud.google.com/secret-manager/docs)
+
