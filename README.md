@@ -36,6 +36,7 @@ The entire Terraform deployment is divided into 2 stages -
   - Deploy the Core RC services
 
 - **Helm Chart Details**
+
 | Chart                   | Chart Version                 |
 |-------------------------|-------------------------------|
 | spar                    | spar-1.0.0                    |
@@ -43,7 +44,7 @@ The entire Terraform deployment is divided into 2 stages -
 | istio-ingressgateway    | gateway-1.23.2                |
 | istio-base              | base-1.23.2                   |
 | cert-manager            | cert-manager-v1.16.1          |
-| prometheus              | kube-prometheus-stack-65.2.0  | 
+| prometheus              | kube-prometheus-stack-65.2.0  |
   
 ### Pre-requisites
 
