@@ -1,5 +1,5 @@
 # SPAR, one-click deployment on GCP
-![spar-infra](assets/spar-architecture.png)
+![spar-infra](assets\Spar-Architecture.png)
 
 
 ## Introduction
@@ -48,6 +48,7 @@ The entire Terraform deployment is divided into 2 stages -
 - **Install Helm**
 
   https://helm.sh/docs/intro/install/
+  
 
 - **Esignet Cluster Setup**
  
@@ -217,7 +218,7 @@ psql "sslmode=require hostaddr=PRIVATE_IP user=postgres dbname=postgres"
 
 - Modify `client_secret` environment variable with the above secret and save the changes in the `esignet-OIDC-flow-with-mock` environment.
 
-- To create an OIDC Client, navigate to the `OIDC Client Mgmt` section and trigger the necessary APIs to create the OIDC client. This gives the clientId and privateKey_jwk.
+- To create an OIDC Client, navigate to the `OIDC Client Mgmt` section and trigger the necessary APIs to create the OIDC client. This gives the clientId and new privateKey_jwk.
  
 - Next, create a mock identity for testing the OIDC flow. Go to the Mock Identity System section and trigger the `Create Mock Identity` API. Get the "individual_id" which gets generated.
 
@@ -231,13 +232,14 @@ psql "sslmode=require hostaddr=PRIVATE_IP user=postgres dbname=postgres"
        psql "sslmode=require hostaddr=PRIVATE_IP user=postgres dbname=postgres"
     ```
     - go the login_providers table and delete the existing data 
+
     ```bash
      delete from login_providers
     ```
     - update the client_id, private_jwk, and redirection_uri in the  below command and start executing the query
-    
+
     ```bash
-     INSERT INTO "public"."login_providers" ("name", "type", "description", "login_button_text", "login_button_image_url", "authorization_parameters", "created_at", "updated_at", "id", "active", "strategy_id") VALUES('E Signet', 'oauth2_auth_code', 'e-signet', 'PROCEED WITH NATIONAL ID', 'https://login.url', '{   "authorize_endpoint": "https://demo.example.com/authorize",   "token_endpoint": "https://demo.example.com/v1/esignet/oauth/v2/token",   "validate_endpoint": "https://demo.example.com/v1/esignet/oidc/userinfo",   "jwks_endpoint": "https://demo.example.com/v1/esignet/oauth/.well-known/jwks.json",   "client_id": "JXT.........Ico",   "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",   "client_assertion_jwk": {"kty":"RSA","n":"iiR5lAA....................3IOEg"},   "response_type": "code",   "scope": "openid profile email",   "redirect_uri": "https://demo.example.com/api/selfservice/oauth2/callback",   "code_verifier": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",   "extra_authorize_parameters": {     "acr_values":"mosip:idp:acr:generated-code mosip:idp:acr:biometrics mosip:idp:acr:linked-wallet",     "claims": "{\"userinfo\":{\"name\":{\"essential\":true},\"phone_number\":{\"essential\":false},\"email\":{\"essential\":false},\"gender\":{\"essential\":true},\"address\":{\"essential\":false},\"picture\":{\"essential\":false}},\"id_token\":{}}"   }}', '2024-04-22 12:14:52.174414', '2024-04-22 12:14:52.174414', 1, 't', 1) ON CONFLICT DO NOTHING; 
+     INSERT INTO "public"."login_providers" ("name", "type", "description", "login_button_text", "login_button_image_url", "authorization_parameters", "created_at", "updated_at", "id", "active", "strategy_id") VALUES('E Signet', 'oauth2_auth_code', 'e-signet', 'PROCEED WITH NATIONAL ID', 'https://login.url', '{   "authorize_endpoint": "https://demo.example.com/authorize",   "token_endpoint": "https://demo.example.com/v1/esignet/oauth/v2/token",   "validate_endpoint": "https://demo.example.com/v1/esignet/oidc/userinfo",   "jwks_endpoint": "https://demo.example.com/v1/esignet/oauth/.well-known/jwks.json",   "client_id": "JXT.........Ico",   "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",   "client_assertion_jwk": {"kty":"RSA","n":"iiR5lAA....................3IOEg"},   "response_type": "code",   "scope": "openid profile email",   "redirect_uri": "https://demo.example.com/api/selfservice/oauth2/callback",   "code_verifier": "dBj.....1gFWFOEjXk",   "extra_authorize_parameters": {     "acr_values":"mosip:idp:acr:generated-code mosip:idp:acr:biometrics mosip:idp:acr:linked-wallet",     "claims": "{\"userinfo\":{\"name\":{\"essential\":true},\"phone_number\":{\"essential\":false},\"email\":{\"essential\":false},\"gender\":{\"essential\":true},\"address\":{\"essential\":false},\"picture\":{\"essential\":false}},\"id_token\":{}}"   }}', '2024-04-22 12:14:52.174414', '2024-04-22 12:14:52.174414', 1, 't', 1) ON CONFLICT DO NOTHING; 
      ``` 
 
 
