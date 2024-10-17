@@ -1,5 +1,6 @@
 # SPAR, one-click deployment on GCP
-![spar-infra](assets\Spar-Architecture.png)
+<img src="assets\Spar-Architecture.png" alt="SPAR Architecture" />
+
 
 
 ## Introduction
@@ -48,7 +49,7 @@ The entire Terraform deployment is divided into 2 stages -
 - **Install Helm**
 
   https://helm.sh/docs/intro/install/
-  
+
 
 - **Esignet Cluster Setup**
  
@@ -110,10 +111,9 @@ bash setup_gcp.sh
 
 #### Terraform State management
 
-####The PROJECT_ID needs to be updated in the command below.
-
 ```bash
 # Maintains the Terraform state for deployment
+
 gcloud storage buckets create gs://$PROJECT_ID-tfs-stg --project=$PROJECT_ID --default-storage-class=STANDARD --location=$REGION --uniform-bucket-level-access
 
 #### The PROJECT_ID needs to be updated in the command below.
@@ -130,6 +130,7 @@ gcloud storage buckets list --project=$PROJECT_ID
 cd $BASEFOLDERPATH
 #### The PROJECT_ID,GSA needs to be updated in the command below.
 # One click of deployment of infrastructure
+
 gcloud builds submit --config="./builds/infra/deploy-script.yaml" \
 --project=$PROJECT_ID --substitutions=_PROJECT_ID_=$PROJECT_ID,\
 _SERVICE_ACCOUNT_=$GSA,_LOG_BUCKET_=$PROJECT_ID-tfs-stg
@@ -220,9 +221,9 @@ psql "sslmode=require hostaddr=PRIVATE_IP user=postgres dbname=postgres"
 
 - To create an OIDC Client, navigate to the `OIDC Client Mgmt` section and trigger the necessary APIs to create the OIDC client. This gives the clientId and new privateKey_jwk.
  
-- Next, create a mock identity for testing the OIDC flow. Go to the Mock Identity System section and trigger the `Create Mock Identity` API. Get the "individual_id" which gets generated.
+- Next, create a mock identity for testing the OIDC flow. Go to the Mock Identity System section and trigger the `Create Mock Identity` API. Get the `individual_id` which gets generated.
 
-- get the clientId and privateKey_jwk from the environment variables.
+- get the `clientId` and `privateKey_jwk` from the environment variables.
 
 - TO INTEGRATE ESIGNET AND SPAR
   
@@ -236,17 +237,11 @@ psql "sslmode=require hostaddr=PRIVATE_IP user=postgres dbname=postgres"
     ```bash
      delete from login_providers
     ```
-    - update the client_id, private_jwk, and redirection_uri in the  below command and start executing the query
+    - update the query by replacing the domain, client_id, private_jwk, and redirection_uri in the  below command and start executing the query
 
     ```bash
      INSERT INTO "public"."login_providers" ("name", "type", "description", "login_button_text", "login_button_image_url", "authorization_parameters", "created_at", "updated_at", "id", "active", "strategy_id") VALUES('E Signet', 'oauth2_auth_code', 'e-signet', 'PROCEED WITH NATIONAL ID', 'https://login.url', '{   "authorize_endpoint": "https://demo.example.com/authorize",   "token_endpoint": "https://demo.example.com/v1/esignet/oauth/v2/token",   "validate_endpoint": "https://demo.example.com/v1/esignet/oidc/userinfo",   "jwks_endpoint": "https://demo.example.com/v1/esignet/oauth/.well-known/jwks.json",   "client_id": "JXT.........Ico",   "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",   "client_assertion_jwk": {"kty":"RSA","n":"iiR5lAA....................3IOEg"},   "response_type": "code",   "scope": "openid profile email",   "redirect_uri": "https://demo.example.com/api/selfservice/oauth2/callback",   "code_verifier": "dBj.....1gFWFOEjXk",   "extra_authorize_parameters": {     "acr_values":"mosip:idp:acr:generated-code mosip:idp:acr:biometrics mosip:idp:acr:linked-wallet",     "claims": "{\"userinfo\":{\"name\":{\"essential\":true},\"phone_number\":{\"essential\":false},\"email\":{\"essential\":false},\"gender\":{\"essential\":true},\"address\":{\"essential\":false},\"picture\":{\"essential\":false}},\"id_token\":{}}"   }}', '2024-04-22 12:14:52.174414', '2024-04-22 12:14:52.174414', 1, 't', 1) ON CONFLICT DO NOTHING; 
      ``` 
 
 
-
-
-## References
-
-- [GKE Cluster](https://cloud.google.com/kubernetes-engine/docs)
-- [Cloud SQL for PostgreSQL](https://cloud.google.com/sql/docs/postgres)
 
