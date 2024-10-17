@@ -16,6 +16,9 @@
 
 - **Istio Ingress**: The traffic to the Spar services is managed by Istio, which acts as the ingress controller.
 
+- **Gateway**: The gateway in Istio acts as the entry point for external traffic.
+
+- **Virtualservice**: A virtual service defines specific routing rules and directs the traffic to the desired Kubernetes services
 
 ## Deployment Approach
 
@@ -31,10 +34,20 @@ The entire Terraform deployment is divided into 2 stages -
   - Create the required infra for RC deployment
 - **Setup** Stage
   - Deploy the Core RC services
+
+- **Helm Chart Details**
+| Chart                   | Chart Version                 |
+|-------------------------|-------------------------------|
+| spar                    | spar-1.0.0                    |
+| istiod                  | istiod-1.23.2                 |
+| istio-ingressgateway    | gateway-1.23.2                |
+| istio-base              | base-1.23.2                   |
+| cert-manager            | cert-manager-v1.16.1          |
+| prometheus              | kube-prometheus-stack-65.2.0  | 
   
 ### Pre-requisites
 
-- ### [Install the gcloud CLI](https://cloud.google.com/sdk/docs/install)
+- #### [Install the gcloud CLI](https://cloud.google.com/sdk/docs/install)
 
 - #### Alternate
 
@@ -206,7 +219,7 @@ gcloud secrets versions access latest --secret spar-dev
 ```
 - Connect to psql
 ```bash
-psql "sslmode=require hostaddr=PRIVATE_IP user=postgres dbname=postgres"
+psql "sslmode=require hostaddr=PRIVATE_IP user=USERNAME dbname=postgres"
 ```
 
 ### DEMO
@@ -224,12 +237,12 @@ psql "sslmode=require hostaddr=PRIVATE_IP user=postgres dbname=postgres"
 
 - get the `clientId` and `privateKey_jwk` from the environment variables.
 
-- TO INTEGRATE ESIGNET AND SPAR
+- **TO INTEGRATE ESIGNET AND SPAR**
   
   - Connect to the spardb 
     
     ```bash
-       psql "sslmode=require hostaddr=PRIVATE_IP user=postgres dbname=postgres"
+       psql "sslmode=require hostaddr=PRIVATE_IP user=USERNAME dbname=postgres"
     ```
     - go the login_providers table and delete the existing data 
 
