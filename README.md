@@ -1,5 +1,5 @@
 # SPAR, one-click deployment on GCP
-![SPAR-Architecture](assets/Spar-Architecture.png)
+![SPAR-Architecture](assets/spar-Architecture.png)
 
 
 ## Introduction
