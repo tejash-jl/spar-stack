@@ -1,5 +1,5 @@
 # SPAR, one-click deployment on GCP
-<img src="assets\Spar-Architecture.png" alt="SPAR Architecture" />
+![SPAR Architecture](assets\Spar-Architecture.png)
 
 
 
