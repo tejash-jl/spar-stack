@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dev-com-tls
+  namespace: istio-system  # Your namespace where Istio is installed
+spec:
+  secretName: spardevelopment-com-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: {{_DOMAIN_}}
+  dnsNames:
+    - {{_DOMAIN_}}

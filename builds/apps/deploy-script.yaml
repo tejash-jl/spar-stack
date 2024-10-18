@@ -1,0 +1,166 @@
+steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'get-credentials'
+    args: ['container', 'clusters', 'get-credentials', '${_CLUSTER_NAME_}', '--project=${_PROJECT_ID_}', '--region=${_REGION_}', '--internal-ip']
+  
+  # Step 2: Installing Helm and dependencies
+  - name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
+    id: 'install-helm'
+    entrypoint: 'bash'
+    args:
+      - -c
+      - |
+        set -a
+        echo ${_LB_NAME_} ${_EMAIL_ID_} ${_CLUSTER_NAME_}  ${_SECRET_NAME_} ${_DB_NAME_} ${_ENABLE_MOCK_} ${_DOMAIN_}
+        apt-get update
+        apt-get install -y jq wget
+        
+        # Install Helm
+        echo "Installing Helm..."
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+        # Add necessary Helm repositories
+        echo "Adding necessary Helm repositories..."
+        helm repo add openg2p https://openg2p.github.io/openg2p-helm
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+        helm repo add jetstack https://charts.jetstack.io
+        helm repo add istio https://istio-release.storage.googleapis.com/charts
+        helm repo update
+        
+        # Install Istio
+         echo "Installing Helm..."
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    
+        # Install Istio Base
+        echo "Installing Istio Base..."
+        helm install istio-base istio/base -n istio-system --create-namespace --wait
+
+        # Install Istiod
+        echo "Installing Istiod..."
+        helm install istiod istio/istiod -n istio-system --wait
+
+        # Install Istio Ingress Gateway
+        echo "Installing Istio Ingress Gateway..."
+        helm install istio-ingressgateway istio/gateway -n istio-system --wait
+        
+        # Install Prometheus
+        echo "Installing Prometheus..."
+        helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+        
+        #Install psql client
+        sudo apt-get install postgresql-client
+
+        #Get DB Details
+        echo "Retrieving SQL Instance IP..."
+        sqlIP=$(gcloud sql instances describe ${_DB_NAME_} --format=json | jq -r ".ipAddresses[0].ipAddress")
+        echo "SQL Instance IP: $sqlIP"
+
+        # Get SQL Password from Secret Manager
+         echo "Retrieving SQL Password"
+        sqlPass=$(gcloud secrets versions access latest --secret ${_SECRET_NAME_})
+        echo "SQL Password: $sqlPass"
+
+        echo "Checking if the 'spar' namespace exists..."
+        if ! kubectl get namespace spar; then
+          echo "Namespace 'spar' not found. Creating it..."
+          kubectl create namespace spar
+        else
+          echo "Namespace 'spar' already exists."
+        fi
+
+        # Create Kubernetes secret
+        kubectl create secret generic external-db-secret --from-literal=SQL_PASS="$sqlPass" -n spar
+        
+        sed -i "s|\(SPAR_MAPPER_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml
+        sed -i "s|\(SPAR_SELFSERVICE_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml 
+
+        # Update the mapper-api DB_HOSTNAME in values.yaml
+        sed -i "s|SPAR_MAPPER_DB_HOSTNAME: ''|SPAR_MAPPER_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml
+        cat deployments/configs/values.yaml | grep SPAR_MAPPER_DB_HOSTNAME
+
+        # Update the spar-self-service-api DB_HOSTNAME in values.yaml
+        echo "Updating SPAR_SELFSERVICE_DB_HOSTNAME in values.yaml..."
+
+        sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml             
+        cat deployments/configs/values.yaml | grep SPAR_SELFSERVICE_DB_HOSTNAME
+
+
+        # Install SPAR
+        echo "Installing SPAR with Helm..."
+        sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/values.yaml
+        helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --wait --set global.sparHostname="${_DOMAIN_}" -f deployments/configs/values.yaml
+        
+        #Install cert Manager
+        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.1 --set crds.enabled=true
+
+        # Apply ClusterIssuer
+
+        echo "Applying ClusterIssuer..."
+        sed -i "s/EMAIL/${_EMAIL_ID_}/g" deployments/configs/clusterissuer.yaml
+        kubectl apply -f deployments/configs/clusterissuer.yaml
+        
+        # Apply Certificate
+
+        echo "Applying Certificate..."
+        if sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/certificates.yaml; then
+           echo "Successfully updated certificates.yaml"
+        else
+            echo "Failed to update certificate.yaml"
+            exit 1
+        fi
+        kubectl apply -f deployments/configs/certificates.yaml
+        
+        # Apply Gateway
+        echo "Applying Gateway..."
+        if sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/gateway.yaml; then
+            echo "Successfully updated gateway.yaml"
+        else
+            echo "Failed to update gateway.yaml"
+            exit 1
+        fi
+        kubectl apply -f deployments/configs/gateway.yaml
+
+        # Apply virtualservice 
+        if sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/virtualservice.yaml; then
+            echo "Successfully updated virtualservice.yaml"
+        else
+            echo "Failed to update virtualservice.yaml"
+            exit 1
+        fi
+        kubectl apply -f deployments/configs/virtualservice.yaml
+        
+
+        loadbalancerip=$(gcloud compute addresses describe "${_LB_NAME_}" --region "${_REGION_}" --format json | jq -r ".address")
+        echo "Load Balancer IP: $loadbalancerip"
+
+        # Patch the Istio ingress gateway with the Load Balancer IP
+        kubectl patch svc istio-ingressgateway --namespace istio-system --patch "{\"spec\": { \"loadBalancerIP\": \"$loadbalancerip\" }}"
+        echo "Istio ingress gateway patched with Load Balancer IP: $loadbalancerip"
+
+tags: ['cloud-builders-community']
+serviceAccount: "projects/${_PROJECT_ID_}/serviceAccounts/${_SERVICE_ACCOUNT_}"
+logsBucket: "gs://${_LOG_BUCKET_}"
+ 
+substitutions:
+  _PROJECT_ID_: ''
+  _REGION_: ''
+  _CLUSTER_NAME_: 'spar-dev-cluster'
+  _DOMAIN_: ''
+  _LOG_BUCKET_: ''
+  _SERVICE_ACCOUNT_: ''
+  _EMAIL_ID_: ''
+  _SECRET_NAME_: 'spar-dev'
+  _DB_NAME_: 'spar-dev-pgsql'
+  _LB_NAME_: 'spar-dev-glb-lb-ip'
+  _NAME_: 'spar-dev'
+  _ENABLE_MOCK_: 'true' # or 'false'
+  _SPAR_VERSION_: '1.0.0'
+
+  
+  
+
+options:
+    dynamicSubstitutions: true
+    pool:
+      name: 'projects/${_PROJECT_ID_}/locations/${_REGION_}/workerPools/${_NAME_}-cloudbuild-private-worker-pool'
+

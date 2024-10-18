@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: internal
+  namespace: spar
+spec:
+  selector:
+    istio: ingressgateway # Use Istio's IngressGateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - {{_DOMAIN_}}
+      tls:
+        httpsRedirect: false
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: spardevelopment-com-tls # This should match the secret name where the cert is stored
+      hosts:
+        - {{_DOMAIN_}}
