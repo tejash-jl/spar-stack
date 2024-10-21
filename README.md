@@ -249,7 +249,7 @@ psql "sslmode=require hostaddr=PRIVATE_IP user=USERNAME dbname=postgres"
     Trigger the DBScript to integrate esignet and spar
     
     ```bash
-       https://github.com/tejash-jl/spar-stack/blob/aparna/deployments/scripts/dbscript.sh
+       https://github.com/tejash-jl/spar-stack/blob/main/deployments/scripts/dbscript.sh
        bash dbscript.sh
     ```
   - If you encounter any `permission denied` error when running the script, run 
