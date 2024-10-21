@@ -56,9 +56,9 @@ steps:
         echo "SQL Instance IP: $sqlIP"
 
         # Get SQL Password from Secret Manager
-         echo "Retrieving SQL Password"
+        echo "Retrieving SQL Password"
         sqlPass=$(gcloud secrets versions access latest --secret ${_SECRET_NAME_})
-        echo "SQL Password: $sqlPass"
+
 
         echo "Checking if the 'spar' namespace exists..."
         if ! kubectl get namespace spar; then
@@ -76,23 +76,20 @@ steps:
 
         # Update the mapper-api DB_HOSTNAME in values.yaml
         sed -i "s|SPAR_MAPPER_DB_HOSTNAME: ''|SPAR_MAPPER_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml
-        cat deployments/configs/values.yaml | grep SPAR_MAPPER_DB_HOSTNAME
-
+        
         # Update the spar-self-service-api DB_HOSTNAME in values.yaml
         echo "Updating SPAR_SELFSERVICE_DB_HOSTNAME in values.yaml..."
 
         sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml             
-        cat deployments/configs/values.yaml | grep SPAR_SELFSERVICE_DB_HOSTNAME
-
+        
+        #Install cert Manager
+        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.1 --set crds.enabled=true
 
         # Install SPAR
         echo "Installing SPAR with Helm..."
         sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/values.yaml
         helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --wait --set global.sparHostname="${_DOMAIN_}" -f deployments/configs/values.yaml
         
-        #Install cert Manager
-        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.1 --set crds.enabled=true
-
         # Apply ClusterIssuer
 
         echo "Applying ClusterIssuer..."
@@ -135,7 +132,7 @@ steps:
 
         # Patch the Istio ingress gateway with the Load Balancer IP
         kubectl patch svc istio-ingressgateway --namespace istio-system --patch "{\"spec\": { \"loadBalancerIP\": \"$loadbalancerip\" }}"
-        echo "Istio ingress gateway patched with Load Balancer IP: $loadbalancerip"
+        echo "Istio ingress gateway patched with Load Balancer IP"
 
 tags: ['cloud-builders-community']
 serviceAccount: "projects/${_PROJECT_ID_}/serviceAccounts/${_SERVICE_ACCOUNT_}"
@@ -153,12 +150,8 @@ substitutions:
   _DB_NAME_: 'spar-dev-pgsql'
   _LB_NAME_: 'spar-dev-glb-lb-ip'
   _NAME_: 'spar-dev'
-  _ENABLE_MOCK_: 'true' # or 'false'
   _SPAR_VERSION_: '1.0.0'
-
-  
-  
-
+ 
 options:
     dynamicSubstitutions: true
     pool:
