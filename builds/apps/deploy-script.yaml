@@ -76,23 +76,20 @@ steps:
 
         # Update the mapper-api DB_HOSTNAME in values.yaml
         sed -i "s|SPAR_MAPPER_DB_HOSTNAME: ''|SPAR_MAPPER_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml
-        cat deployments/configs/values.yaml | grep SPAR_MAPPER_DB_HOSTNAME
-
+        
         # Update the spar-self-service-api DB_HOSTNAME in values.yaml
         echo "Updating SPAR_SELFSERVICE_DB_HOSTNAME in values.yaml..."
 
         sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml             
-        cat deployments/configs/values.yaml | grep SPAR_SELFSERVICE_DB_HOSTNAME
-
+        
+        #Install cert Manager
+        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.1 --set crds.enabled=true
 
         # Install SPAR
         echo "Installing SPAR with Helm..."
         sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/values.yaml
         helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --wait --set global.sparHostname="${_DOMAIN_}" -f deployments/configs/values.yaml
         
-        #Install cert Manager
-        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.1 --set crds.enabled=true
-
         # Apply ClusterIssuer
 
         echo "Applying ClusterIssuer..."
@@ -153,7 +150,6 @@ substitutions:
   _DB_NAME_: 'spar-dev-pgsql'
   _LB_NAME_: 'spar-dev-glb-lb-ip'
   _NAME_: 'spar-dev'
-  _ENABLE_MOCK_: 'true' # or 'false'
   _SPAR_VERSION_: '1.0.0'
  
 options:
