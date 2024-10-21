@@ -56,9 +56,9 @@ steps:
         echo "SQL Instance IP: $sqlIP"
 
         # Get SQL Password from Secret Manager
-         echo "Retrieving SQL Password"
+        echo "Retrieving SQL Password"
         sqlPass=$(gcloud secrets versions access latest --secret ${_SECRET_NAME_})
-        echo "SQL Password: $sqlPass"
+
 
         echo "Checking if the 'spar' namespace exists..."
         if ! kubectl get namespace spar; then
@@ -135,7 +135,7 @@ steps:
 
         # Patch the Istio ingress gateway with the Load Balancer IP
         kubectl patch svc istio-ingressgateway --namespace istio-system --patch "{\"spec\": { \"loadBalancerIP\": \"$loadbalancerip\" }}"
-        echo "Istio ingress gateway patched with Load Balancer IP: $loadbalancerip"
+        echo "Istio ingress gateway patched with Load Balancer IP"
 
 tags: ['cloud-builders-community']
 serviceAccount: "projects/${_PROJECT_ID_}/serviceAccounts/${_SERVICE_ACCOUNT_}"
@@ -155,10 +155,7 @@ substitutions:
   _NAME_: 'spar-dev'
   _ENABLE_MOCK_: 'true' # or 'false'
   _SPAR_VERSION_: '1.0.0'
-
-  
-  
-
+ 
 options:
     dynamicSubstitutions: true
     pool:

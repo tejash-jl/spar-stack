@@ -236,8 +236,7 @@ resource "google_secret_manager_secret" "secret_basic" {
 
 resource "random_password" "password" {
   length           = 16
-  special          = true
-  override_special = "_%@"
+  special          = false
 }
 
 resource "google_secret_manager_secret_version" "secret" {
