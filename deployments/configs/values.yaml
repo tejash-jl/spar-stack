@@ -1,5 +1,5 @@
 global:
-  hostname: 
+  hostname: _DOMAIN_
   esignetBaseUrl: https://qafr.dpgongcp.com
 
 postgresql:
@@ -18,6 +18,16 @@ spar-mapper-api:
       secretKeyRef:
         name: 'external-db-secret'
         key: 'SQL_PASS'
+  istio:
+    enabled: true
+    virtualservice:
+      enabled: true
+      host: _DOMAIN_
+      gateway: "spar-spar-self-service-ui"
+      prefix: "/api/mapper/"
+      rewriteUri: "/"
+    gateway:
+      enabled: false
 
 spar-self-service-api:
   enabled: true
@@ -35,17 +45,38 @@ spar-self-service-api:
       secretKeyRef:
         name: 'external-db-secret'
         key: 'SQL_PASS'
+  istio:
+    enabled: true
+    virtualservice:
+      enabled: true
+      host: _DOMAIN_
+      gateway: "spar-spar-self-service-ui"
+      prefix: "/api/selfservice/"
+      rewriteUri: "/"
+    gateway:
+      enabled: false
+
 
 
 spar-self-service-ui:
   enabled: true
-
-istio:
-  enabled: true
-  virtualservice:
+  istio:
     enabled: true
-    host: "{{_DOMAIN_}}"
-    gateway: internal
-    matchPort: 80
-    destination: 'spar-spar-mapper-api'
-    destinationPort: "80"
+    virtualservice:
+      enabled: true
+      host: _DOMAIN_
+      gateway: "spar-spar-self-service-ui"
+      prefix: "/selfservice"
+      rewriteUri: ""
+    gateway:
+      enabled: true
+      host: _DOMAIN_
+      ingressController:
+        istio: ingressgateway
+      httpTlsRedirect: true
+      tls:
+        enabled: true
+        mode: SIMPLE
+        credentialName: spardevelopment-com-tls
+
+

@@ -11,7 +11,7 @@ steps:
       - -c
       - |
         set -a
-        echo ${_LB_NAME_} ${_EMAIL_ID_} ${_CLUSTER_NAME_}  ${_SECRET_NAME_} ${_DB_NAME_} ${_ENABLE_MOCK_} ${_DOMAIN_}
+        echo ${_LB_NAME_} ${_EMAIL_ID_} ${_CLUSTER_NAME_}  ${_SECRET_NAME_} ${_DB_NAME_} ${_DOMAIN_}
         apt-get update
         apt-get install -y jq wget
         
@@ -71,25 +71,6 @@ steps:
         # Create Kubernetes secret
         kubectl create secret generic external-db-secret --from-literal=SQL_PASS="$sqlPass" -n spar
         
-        sed -i "s|\(SPAR_MAPPER_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml
-        sed -i "s|\(SPAR_SELFSERVICE_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml 
-
-        # Update the mapper-api DB_HOSTNAME in values.yaml
-        sed -i "s|SPAR_MAPPER_DB_HOSTNAME: ''|SPAR_MAPPER_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml
-        
-        # Update the spar-self-service-api DB_HOSTNAME in values.yaml
-        echo "Updating SPAR_SELFSERVICE_DB_HOSTNAME in values.yaml..."
-
-        sed -i "s|SPAR_SELFSERVICE_DB_HOSTNAME: ''|SPAR_SELFSERVICE_DB_HOSTNAME: '$sqlIP'|" deployments/configs/values.yaml             
-        
-        #Install cert Manager
-        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.1 --set crds.enabled=true
-
-        # Install SPAR
-        echo "Installing SPAR with Helm..."
-        sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/values.yaml
-        helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --wait --set global.sparHostname="${_DOMAIN_}" -f deployments/configs/values.yaml
-        
         # Apply ClusterIssuer
 
         echo "Applying ClusterIssuer..."
@@ -107,26 +88,20 @@ steps:
         fi
         kubectl apply -f deployments/configs/certificates.yaml
         
-        # Apply Gateway
-        echo "Applying Gateway..."
-        if sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/gateway.yaml; then
-            echo "Successfully updated gateway.yaml"
-        else
-            echo "Failed to update gateway.yaml"
-            exit 1
-        fi
-        kubectl apply -f deployments/configs/gateway.yaml
-
-        # Apply virtualservice 
-        if sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/virtualservice.yaml; then
-            echo "Successfully updated virtualservice.yaml"
-        else
-            echo "Failed to update virtualservice.yaml"
-            exit 1
-        fi
-        kubectl apply -f deployments/configs/virtualservice.yaml
+        sed -i "s|\(SPAR_MAPPER_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml
+        sed -i "s|\(SPAR_SELFSERVICE_DB_HOSTNAME: \).*|\1'$sqlIP'|" deployments/configs/values.yaml 
+             
+        sed -i "s|_DOMAIN_|${_DOMAIN_}|" deployments/configs/values.yaml             
         
+        #Install cert Manager
+        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.1 --set crds.enabled=true
 
+        # Install SPAR
+        echo "Installing SPAR with Helm..."
+        sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/values.yaml
+        helm install spar openg2p/spar -n spar --create-namespace --version "${_SPAR_VERSION_}"  --wait -f deployments/configs/values.yaml
+        
+        
         loadbalancerip=$(gcloud compute addresses describe "${_LB_NAME_}" --region "${_REGION_}" --format json | jq -r ".address")
         echo "Load Balancer IP: $loadbalancerip"
 
