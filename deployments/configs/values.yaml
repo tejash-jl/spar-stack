@@ -73,7 +73,6 @@ spar-self-service-ui:
       host: _DOMAIN_
       ingressController:
         istio: ingressgateway
-      httpTlsRedirect: true
       tls:
         enabled: true
         mode: SIMPLE

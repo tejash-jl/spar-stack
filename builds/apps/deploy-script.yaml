@@ -47,6 +47,9 @@ steps:
         echo "Installing Prometheus..."
         helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
         
+        #Install cert Manager
+        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.2 --set crds.enabled=true
+
         #Install psql client
         sudo apt-get install postgresql-client
 
@@ -93,9 +96,6 @@ steps:
              
         sed -i "s|_DOMAIN_|${_DOMAIN_}|" deployments/configs/values.yaml             
         
-        #Install cert Manager
-        helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.16.1 --set crds.enabled=true
-
         # Install SPAR
         echo "Installing SPAR with Helm..."
         sed -i -E "s|\{\{_DOMAIN_\}\}|${_DOMAIN_}|g" deployments/configs/values.yaml
